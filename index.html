@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+    }
+
+    .game-container {
+      text-align: center;
+    }
+
+    .game-area {
+      width: 300px;
+      height: 300px;
+      border: 2px solid #000;
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      grid-template-rows: repeat(15, 1fr);
+      gap: 0;
+      position: relative;
+      background-color: #f8f8f8;
+    }
+
+    .snake, .milk {
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      background-color: green;
+      border-radius: 50%;
+    }
+
+    .milk {
+      background-color: red;
+    }
+
+    .score {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .game-over {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: white;
+      z-index: 2;
+      display: none;
+    }
+
+    .game-over.active {
+      display: flex;
+    }
+
+    .nag-panchami-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 20px;
+      color: #333;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    .nag-panchami-message.active {
+      display: block;
+    }
+  </style>
+  <title>Snake Game</title>
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-over" id="game-over">Game Over!</div>
+    <div class="game-area" id="game-area"></div>
+    <div class="score">Score: <span id="score">0</span></div>
+  </div>
+  <script>
+    const gameArea = document.getElementById('game-area');
+    const scoreElement = document.getElementById('score');
+
+    const gridSize = 15;
+    let snake = [{ x: 7, y: 7 }];
+    let milk = { x: 10, y: 10 };
+    let score = 0;
+    let direction = 'right';
+    let isGameOver = false;
+
+    function getRandomCoordinate() {
+      return Math.floor(Math.random() * gridSize);
+    }
+
+    function createMilk() {
+      milk.x = getRandomCoordinate();
+      milk.y = getRandomCoordinate();
+
+      const milkElement = document.createElement('div');
+      milkElement.classList.add('milk');
+      milkElement.style.gridColumnStart = milk.x + 1;
+      milkElement.style.gridRowStart = milk.y + 1;
+      gameArea.appendChild(milkElement);
+    }
+
+    function checkCollision(head) {
+      if (head.x < 0 || head.x >= gridSize || head.y < 0 || head.y >= gridSize) {
+        isGameOver = true;
+      }
+
+      for (const segment of snake) {
+        if (segment.x === head.x && segment.y === head.y) {
+          isGameOver = true;
+        }
+      }
+    }
+
+    function updateGameArea() {
+      if (isGameOver) {
+        alert(`Game Over! Your score: ${score}`);
+        location.reload();
+        return;
+      }
+
+      const head = Object.assign({}, snake[0]);
+
+      if (direction === 'right') {
+        head.x++;
+      } else if (direction === 'left') {
+        head.x--;
+      } else if (direction === 'down') {
+        head.y++;
+      } else if (direction === 'up') {
+        head.y--;
+      }
+
+      checkCollision(head);
+
+      snake.unshift(head);
+
+      if (head.x === milk.x && head.y === milk.y) {
+        score += 10;
+        scoreElement.textContent = score;
+        createMilk();
+      } else {
+        snake.pop();
+      }
+
+     
+
+      gameArea.innerHTML = '';
+
+      snake.forEach(segment => {
+        const segmentElement = document.createElement('div');
+        segmentElement.classList.add('snake');
+        segmentElement.style.gridColumnStart = segment.x + 1;
+        segmentElement.style.gridRowStart = segment.y + 1;
+        gameArea.appendChild(segmentElement);
+      });
+
+      const milkElement = document.createElement('div');
+      milkElement.classList.add('milk');
+      milkElement.style.gridColumnStart = milk.x + 1;
+      milkElement.style.gridRowStart = milk.y + 1;
+      gameArea.appendChild(milkElement);
+
+      setTimeout(updateGameArea, 150);
+    }
+
+    createMilk();
+    updateGameArea();
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'ArrowRight' && direction !== 'left') {
+        direction = 'right';
+      } else if (event.key === 'ArrowLeft' && direction !== 'right') {
+        direction = 'left';
+      } else if (event.key === 'ArrowDown' && direction !== 'up') {
+        direction = 'down';
+      } else if (event.key === 'ArrowUp' && direction !== 'down') {
+        direction = 'up';
+      }
+    });
+  </script>
+</body>
+</html>
